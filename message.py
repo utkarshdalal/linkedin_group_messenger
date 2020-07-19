@@ -12,12 +12,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 username = 'your username'
 password = 'your password'
 
-# The URL of the group you want to post to. You MUST be a member of this group.
-group_link = 'https://www.linkedin.com/groups/10356456/'
+# The URL of the group you want to post to. You MUST be a member of this group. Make sure there's no slash at the end.
+group_link = 'https://www.linkedin.com/groups/2218881'
 
 # The regex you want to look for in the person's title.
 # For instance, if I want to look for CEOs, I would add '.*ceo.*'. Case insensitive.
-member_title_regex_list = ['.*managing partner*', '.*found.*']
+member_title_regex_list = ['.*founder .*', '.*partner .*']
 
 # A list of locations you want to contact people in.
 # If I wanted to contact people in India and Canada, I would set this to ['India', 'Canada']
@@ -30,8 +30,37 @@ message_if_org_type_unclear = True
 
 # The message you want to send people matching these descriptions.
 # Potential inputs are {member_full_name}, {member_first_name}, {member_position}, {current_org}
-message = "Hi {member_first_name}, I see you're running things at {current_org}. " \
-          "\nWe're in the same group, buy our product."
+message = "Hi {member_first_name}, \n\n" \
+          "I'm reaching out to you today because we're both in the Bar & Bench group, " \
+          "and I see you're a decision maker at {current_org}. \n\n" \
+          "A friend and I have created a startup called Firmation (www.firmation.in) " \
+          "that helps law firms automatically generate invoices from their timesheets. " \
+          "If you are currently generating your invoices by hand, our product can help you save time every month " \
+          "and lets you focus on increasing your billable hours. \n\n" \
+          "Does this sound like it could be useful to you? If so I'd love to give you a demo. \n\n" \
+          "Additionally, we'd love to chat about any other problems you face when doing your billing so that we " \
+          "can help you solve them. If you're open to this, please let me know.\n\n" \
+          "Thank you, and looking forward to hearing from you!\n\n" \
+          "Utkarsh"
+
+
+def check_if_member_messaged(linkedin_profile_url):
+    # Open the file in read only mode
+    with open('messaged_members.txt', 'r') as read_obj:
+        # Read all lines in the file one by one
+        for line in read_obj:
+            # For each line, check if line contains the string
+            if linkedin_profile_url in line:
+                return True
+    return False
+
+
+def write_member_url_to_file(linkedin_profile_url):
+    # Open the file in read only mode
+    with open('messaged_members.txt', 'a') as file:
+        # Read all lines in the file one by one
+        file.write(linkedin_profile_url + '\n')
+
 
 options = webdriver.ChromeOptions()
 options.add_argument('--ignore-certificate-errors')
@@ -78,28 +107,34 @@ while True:
                 # switch to second tab
                 driver.switch_to.window(second_tab)
 
-                member_location = driver.find_element_by_class_name('pv-top-card--list-bullet').text
-                if any(location in member_location for location in locations):
-                    try:
-                        current_org_item = driver.find_element_by_class_name('pv-top-card--experience-list-item')
-                        current_org = current_org_item.text
-                        current_org_item.click()
-                        wait = WebDriverWait(driver, 10).until(EC.presence_of_element_located
-                                                               ((By.CLASS_NAME, 'pv-entity__summary-info')))
-                        experience_list = driver.find_element_by_class_name('pv-entity__summary-info').click()
-                        wait = WebDriverWait(driver, 5).until(EC.presence_of_element_located
-                                                              ((By.CLASS_NAME,
-                                                                'org-top-card-summary-info-list__info-item')))
-                        organisation_type = \
-                        driver.find_elements_by_class_name('org-top-card-summary-info-list__info-item')[0].text
+                member_url = driver.current_url
 
-                        if organisation_type in org_types:
-                            message_member = True
+                if not check_if_member_messaged(member_url):
+                    member_location = driver.find_element_by_class_name('pv-top-card--list-bullet').text
+                    if any(location in member_location for location in locations):
+                        try:
+                            current_org_item = driver.find_element_by_class_name('pv-top-card--experience-list-item')
+                            current_org = current_org_item.text
+                            current_org_item.click()
+                            wait = WebDriverWait(driver, 10).until(EC.presence_of_element_located
+                                                                   ((By.CLASS_NAME, 'pv-entity__summary-info')))
+                            experience_list = driver.find_element_by_class_name('pv-entity__summary-info').click()
+                            wait = WebDriverWait(driver, 5).until(EC.presence_of_element_located
+                                                                  ((By.CLASS_NAME,
+                                                                    'org-top-card-summary-info-list__info-item')))
+                            organisation_type = \
+                            driver.find_elements_by_class_name('org-top-card-summary-info-list__info-item')[0].text
 
-                    except TimeoutException as e:
-                        print('No experience or company does not exist')
-                        if message_if_org_type_unclear:
-                            message_member = True
+                            if organisation_type in org_types:
+                                message_member = True
+
+                        except TimeoutException as e:
+                            print('No experience or company does not exist')
+                            if message_if_org_type_unclear:
+                                message_member = True
+                else:
+                    print("Already messaged this member, skipping.")
+
                 driver.close()
                 # switch to first tab
                 driver.switch_to.window(first_tab)
@@ -116,6 +151,7 @@ while True:
                     driver.find_element_by_class_name('msg-form__send-button').click()
                     driver.find_element_by_xpath(
                         "//button[@data-control-name='overlay.close_conversation_window']").click()
+                    write_member_url_to_file(member_url)
                     try:
                         driver.find_element_by_class_name("mlA").click()
                     except NoSuchElementException as e:
