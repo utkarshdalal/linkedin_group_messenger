@@ -9,11 +9,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Correctly fill in the variables below, and then run this script with python3 message.py
-username = 'your username'
-password = 'your password'
+username = 'your_username'
+password = 'your_password'
 
 # The URL of the group you want to post to. You MUST be a member of this group. Make sure there's no slash at the end.
-group_link = 'https://www.linkedin.com/groups/2218881'
+group_link = 'https://www.linkedin.com/groups/10356456'
 
 # The regex you want to look for in the person's title.
 # For instance, if I want to look for CEOs, I would add '.*ceo.*'. Case insensitive.
@@ -31,15 +31,17 @@ message_if_org_type_unclear = True
 # The message you want to send people matching these descriptions.
 # Potential inputs are {member_full_name}, {member_first_name}, {member_position}, {current_org}
 message = "Hi {member_first_name}, \n\n" \
-          "I'm reaching out to you today because we're both in the Bar & Bench group, " \
-          "and I see you're a decision maker at {current_org}. \n\n" \
-          "A friend and I have created a startup called Firmation (www.firmation.in) " \
-          "that helps law firms automatically generate invoices from their timesheets. " \
-          "If you are currently generating your invoices by hand, our product can help you save time every month " \
-          "and lets you focus on increasing your billable hours. \n\n" \
-          "Does this sound like it could be useful to you? If so I'd love to give you a demo. \n\n" \
-          "Additionally, we'd love to chat about any other problems you face when doing your billing so that we " \
-          "can help you solve them. If you're open to this, please let me know.\n\n" \
+          "My name is Utkarsh and I'm co-founder of a LegalTech startup called Firmation (www.firmation.in). " \
+          "We're both members of the Legal Transformation with Technology group, " \
+          "and I saw that you're a decision maker at {current_org}, " \
+          "so I wanted to reach out. \n\n" \
+          "Many of the lawyers we've spoken to have complained that associates do not log their time regularly, " \
+          "waste billable hours doing this at a later date, and sometimes even forget to log time for short " \
+          "phone calls and email opinions, which means money lost.\n\n" \
+          "To help address this issue, we're currently working on software to help lawyers automatically keep track " \
+          "of time they spend working. \n\n" \
+          "Does this sound like it could be useful to you? If so, I would love to set up a quick 20-minute chat " \
+          "to discuss how our software could help you. \n\n" \
           "Thank you, and looking forward to hearing from you!\n\n" \
           "Utkarsh"
 
